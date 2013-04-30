@@ -1,0 +1,82 @@
+<div class="row=fluid">
+  <div class="span9">
+    <!-- btn-toolbar does not work right so had to do spans  -->
+    <div class="alert alert-error" ng-show="errored">
+      <strong>Error!</strong> {{alert}}
+    </div>
+  </div>
+  <div class="span3">
+    <div class="btn-group pull-right">
+      <button class="btn"  href="" ng-click="newPlayer(pid)">New</button>
+      <button class="btn"  href="" ng-click="savePlayer(pid)" 
+        ng-disabled="playerForm.$invalid || playerForm.$pristine">Save</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="row-fluid">
+  <div class="span12">
+    <form name="playerForm" class="form-inline">
+      <legend>Player</legend>
+      <div class="controls controls-row">
+        <label>Id<br/>
+          <input type="text" name="id" placeholder="Id" required 
+            class="input-small" ng-model="player.id" readonly>
+        </label>
+         <label>Id<br/>
+          <input type="text" name="tid" placeholder="Team Id" required 
+            class="input-small" ng-model="player.tid" readonly>
+        </label>
+        <label>Name<br/>
+          <input type="text" name="name" placeholder="Name" required 
+            class="input-medium" ng-model="player.name" >
+        </label>
+        <label>Kind<br/>
+          <select class="input-small" name="kind" required 
+            ng-model="player.kind"
+            ng-options="kind for kind in kindOptions">
+          </select>
+        </label>
+        <label>Strength<br/>
+          <input type="number" name="strength" placeholder="Strength" required 
+            min="1" max="9" class="input-small" ng-model="player.strength" >
+        </label>
+        <label>Speed<br/>
+          <input type="number" name="speed" placeholder="Speed" required 
+            min="1" max="9" class="input-small" ng-model="player.speed" >
+        </label>
+        <label>Health<br/>
+          <input type="number" name="health" placeholder="Health" required 
+             min="1" max="9" class="input-small" ng-model="player.health" >
+        </label>
+        <label>Attack<br/>
+          <input type="number" name="attack" placeholder="Attack" required 
+             min="1" max="9" class="input-small" ng-model="player.attack" >
+        </label>
+        <label>Defend<br/>
+          <input type="number" name="defend" placeholder="Defent" required 
+             min="1" max="9" class="input-small" ng-model="player.defend" >
+        </label>
+      </div>
+      <div ng-style="{color:'red'}" ng-cloak 
+        ng-show="playerForm.$dirty && playerForm.$invalid">
+        <span ng-show="!!playerForm.$error.required"> Missing:</span>
+        <span ng-show="playerForm.name.$error.required"> Name.</span>
+        <span ng-show="playerForm.kind.$error.required"> Kind.</span>
+        <span ng-show="playerForm.strength.$error.required"> Strength.</span>
+        <span ng-show="playerForm.customer.$error.required"> Strength.</span>
+        <span ng-show="!!playerForm.$error.pattern"> Invalid: </span>
+        <span ng-show="playerForm.pon.$error.pattern"> Strength.</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<h4>PID</h4>
+<p>{{pid}}</p>
+<h4>Player</h4>
+<p>{{player}}</p>
+    
