@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html ng-app="myApp">
   <head>
-    <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/owd/static/libs/bootstrap/css/bootstrap.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/static/libs/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <!--<script src="/static/libs/bootstrap/js/bootstrap.js"></script>-->
+    <link href="/owd/static/libs/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <!--<script src="/owd/static/libs/bootstrap/js/bootstrap.js"></script>-->
     
-    <script src="/static/libs/angular/angular.js"></script>
-    <script src="/static/libs/angular/angular-resource.js"></script>
+    <script src="/owd/static/libs/angular/angular.js"></script>
+    <script src="/owd/static/libs/angular/angular-resource.js"></script>
 
-    <script src="/static/files/app.js"></script>
-    <link rel="stylesheet" href="/static/files/app.css">
-    <script src="/static/files/services.js"></script>
+    <script src="/owd/static/files/app.js"></script>
+    <link rel="stylesheet" href="/owd/static/files/app.css">
+    <script src="/owd/static/files/services.js"></script>
    
-    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/owd/static/favicon.ico">
   
   
   </head>
-  <body ng-init="basePath=''">
+  <body ng-init="basePath='/owd'">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
           <a class="brand" ng-href="{{basePath}}/app" >
-            <img ng-src="{{basePath}}/static/files/images/leaf.png" />
+            <img ng-src="{{basePath}}/static/files/leaf.png" />
           </a>
           <a class="brand" ng-href="{{basePath}}/app">Demo</a>
           <div class="nav-collapse">

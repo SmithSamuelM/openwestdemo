@@ -7,17 +7,29 @@ import os.path as path
 import simplejson as json
 
 import bottle
+import brining
 
+from ..helps import getLogger
 from ..ends import app, BASE_PATH
+from ..means import teaming
 
-from pbxtesting import Loggerizer, allTestsRunner
-logger = Loggerizer().getLogger(name=__name__)    
+logger = getLogger()
 
-@app.get('%s/test' % BASE_PATH) 
+@app.get('/test') 
 def testGet():
-    """ Show location of web app given prefix BASE_PATH"""
+    """ Show location of this file"""
     bottle.response.set_header('content-type', 'text/plain')
-    content =  "Web app is located at %s" % path.dirname(path.abspath(__file__))  
+    content =  "Web app file is located at %s" % path.dirname(path.abspath(__file__))
+    siteMap = ""
+    from ..ends import app #get app at run time incase remounted
+    for route in app.routes:
+        siteMap = "%s%s%s %s" %  (siteMap, '\n' if siteMap else '', route.rule, route.method)
+        target = route.config.get('mountpoint', {}).get('target')
+        if target:
+            for way in target.routes:
+                siteMap = "%s\n    %s %s" %  (siteMap, way.rule, way.method)
+                
+    content = "%s\n%s" %  (content, siteMap)
     return content
 
 
@@ -31,10 +43,11 @@ def teamsGet():
             if team['name'] == name: 
                teams.append(team)
         else: #return list of all teams
-            teams.append(team)
+            teams.append(team._dumpable(deep=True))
             
     bottle.response.set_header('content-type', 'application/json')
-    return json.dumps(teams) 
+    return json.dumps(teams, default=brining.default, indent=2)
+
 
 @app.route('/backend/teams/<tid>') 
 def teamIdGet(tid):
@@ -46,7 +59,7 @@ def teamIdGet(tid):
     team = teaming.teams.get(tid, None)
     if not team:
         bottle.abort(404, "Team '%s' not found." % tid)
-    return team
+    return team._dumpable(deep=True)
 
 @app.get('/backend/players') #angular strips trailing slash if no <pid>
 def playersGet():
@@ -60,7 +73,7 @@ def playersGet():
             players.append(player)
     
     bottle.response.set_header('content-type', 'application/json')
-    return json.dumps(players) 
+    return json.dumps(players, default=brining.default, indent=2) 
 
 @app.get('/backend/players/<pid>') 
 def playerIdGet(pid):
@@ -72,7 +85,7 @@ def playerIdGet(pid):
     player = teaming.players.get(pid, None)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))    
-    return player
+    return player._dumpable(deep=true)
 
 @app.get('/backend/players/create/create') #testing only
 @app.post('/backend/players') 

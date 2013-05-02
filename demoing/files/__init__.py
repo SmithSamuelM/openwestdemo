@@ -4,19 +4,11 @@ __all__ = []
 from os import path
 import bottle
 
-import myapp 
-
-app = myapp.app #get app from myapp package.
+from ..ends import app 
 
 # Common JavaScript libraries .  ../../../libs/web 
-STATIC_LIBS_PATH =  path.join(
-                        path.join(
-                            path.dirname(
-                                path.dirname(
-                                    path.dirname(
-                                        path.dirname(path.abspath(__file__))))),
-                        'libs'),
-                    'web')
+STATIC_LIBS_PATH =  path.join(path.dirname(path.dirname(
+                        path.abspath(__file__))), 'libs')
 
 # Application specific Static files ./
 STATIC_FILES_PATH = path.dirname(path.abspath(__file__))

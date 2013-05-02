@@ -29,7 +29,7 @@ from demoing import helps
 if __name__ == "__main__":
     """Process command line args """
     
-    levels = demoing.helps.LEVELS #map of strings to logging levels
+    levels = demoing.helps.LOGGING_LEVELS #map of strings to logging levels
     
     d = "Runs localhost wsgi service on given host address and port. "
     d += "\nDefault host:port is localhost:8080."

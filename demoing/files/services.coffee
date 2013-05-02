@@ -101,9 +101,10 @@ angular.module("statusActionService", []).factory "StatusActionService",
 
 
 
+base = '/owd'
 
 angular.module("teamService", ["ngResource"]).factory "TeamService", 
-    ['$resource', ($resource) -> $resource "/backend/teams/:id", 
+    ['$resource', ($resource) -> $resource "#{base}/backend/teams/:id", 
         {id: '@id'},
         put: 
             method: 'PUT'
@@ -111,7 +112,7 @@ angular.module("teamService", ["ngResource"]).factory "TeamService",
     ]
     
 angular.module("playerService", ["ngResource"]).factory "PlayerService", 
-    ['$resource', ($resource) -> $resource "/backend/players/:id", 
+    ['$resource', ($resource) -> $resource "#{base}/backend/players/:id", 
         {id: '@id'},
         update: 
             method: 'PUT'

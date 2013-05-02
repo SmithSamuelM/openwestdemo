@@ -2,127 +2,159 @@
 
 """
 import sys
-
-if sys.version_info[1] < 7: #python 2.6 or earlier
-    from  ordereddict import OrderedDict as ODict
-else:
-    from collections import OrderedDict as  ODict
+import random
+from os import path
+from  collections import OrderedDict as ODict
 
 import brining
 
-nextTID = 1
-nextPID = 1
+from ..helps import getLogger
 
+logger = getLogger()
 
-DEFAULT_PLAYER = ODict([('id', None), ('tid', None), ('name', ""),
-                        ('kind', "good"), ('strength', 2),('speed', 2),
-                        ('health', 5), ('attack', 3), ('defend', 4)])
-DEFAULT_TEAM =  ODict([('id', None), ('name', ""), ('players', None)])
-
-def newTeam(name=""):
-    global nextTID
-    
-    team = ODict(DEFAULT_TEAM) #make copy
-    team['id'] = nextTID
-    nextTID += 1
-    if name:
-        team['name'] = name
-    team['players'] = ODict()
-    return team
-
-def newPlayer(name = "", team=None):
-    global nextPID
-    
-    player = ODict(DEFAULT_PLAYER) #make copy
-    player['id'] = nextPID
-    nextPID += 1
-    if name:
-        player['name'] =  name    
-    if team:
-        player['tid'] = team["id"]
-    
-    return player
-        
-
-init = [
-        ("red", ("John",  "Betty", "Rich", "Susan")),
-        ("blue", ("Peter", "Jenny", "Jack", "Trish")), 
-       ]
+MAX_SKILL = 9
+MAX_HEALTH = 9
 
 teams = ODict()
 players = ODict()
 
-
-for tname, pnames in init:
-    team = newTeam(name=tname)
-    teams[team['id']] = team
-    for pname in pnames:
-        player = newPlayer(name=pname, team=team)
-        players[player['id']] = player
-        team['players'][player['id']] = player
-        
-        
-class Player(brining.Brine):
-    """ """
-    Keys =  ['name', 'kind', 'strength', 'speed', 'health',  'attack', 'defend']
-    def __init__(self, name="", kind="good",strength=2, speed=2, health=10,
-                 attack=2, defend=2):
-        """ """
-        self.name = name.strip().replace(" ", '')
-        self.kind = kind
-        self.strength = strength
-        self.speed = speed
-        self.health = health
-        self.attack =  attack
-        self.defend = defend
+class TeamingError(Exception):
+    """ Base class module exceptions 
+        generic exception 
+    """
+    def __init__(self, msg=''):
+        """Create exception instance with attributes
+           msg is description
+           args is tuple of (msg,)
+        """
+        self.msg = msg
+        self.args = (self.msg,)
     
+    def __str__(self):
+        """Return string version of exception"""
+        return ("%s." % (self.msg))
 
+
+def fetchTeam(name=""):
+    """ fetch team from teams by name
+        returns None if not found
+    """
+    if not name:
+        return None
+    
+    for team in teams.values():
+        if team.name == name:
+            return team
+    return None
+
+def fetchPlayer(name=""):
+    """ fetch player from players by name
+        returns None if not found
+    """
+    if not name:
+        return None
+    
+    for player in players.values():
+        if player.name == name:
+            return player
+    return None
+
+def newTeam(name=""):
+    """ Create new team and add to teams
+        Team names must be unique
+    """
+    name = name.strip()
+    if not name:
+        raise TeamingError("Team name must not be empty.")
+    
+    if fetchTeam(name):
+        raise TeamingError("Team with name '%s' already exists." % name )
+    
+    team = Team(name=name)
+    teams[team.tid] = team
+    
+    return team
+
+def newPlayer(name="", health=None, skill=None, team=None):
+    """ Create player and add to players.
+        Also Add to team if given
+    """
+    name = name.strip()
+    if not name:
+        raise TeamingError("Player name must not be empty.")
+    
+    if health is None:
+        health = random.randint(1, MAX_HEALTH)
+    if skill is  None:
+        skill =  random.randint(1, MAX_SKILL)
+    
+    health = min(MAX_HEALTH, max(3, int(health)))
+    skill = min(MAX_SKILL, max(1, int(skill)))
+    
+    player = Player(name=name, health=health, skill=skill)
+    players[player.pid] = player
+    
+    if team:
+        team.addPlayer(player)
+    
+    return player
+        
+
+class Player(brining.Brine):
+    """ Player class """
+    _Pid = 0 # unique player id class attribute 
+    _Keys =  ['pid', 'name', 'health',  'skill']
+    
+    def __init__(self, name="", health=5, skill=2):
+        """ Initialize"""
+        Player._Pid += 1
+        self.pid = Player._Pid
+        self.name = name.strip()
+        self.health = int(health)
+        self.skill = int(skill)
+        self.tid = None
+    
+    def changeTeam(self, team):
+        """ Change current .team to team"""
+        if self.tid != team.tid:
+            teams[self.tid].removePlayer(player=self)
+            team.addPlayer(self)
+        
 class Team(brining.Brine):
-    """   """
-    def __init__(self, name="", players=None):
-        self.name = name.strip().replace(" ", '')
-        self.players = dict(players or {}) #make copy
+    """ Team class  """
+    _Tid = 0 # unique team id class attribute
+    _Keys = ['tid', 'name', 'players']
+    
+    def __init__(self, name=""):
+        """ Init team with unique tid"""
+        Team._Tid += 1
+        self.tid = Team._Tid
+        self.name = name.strip()
+        self.players = ODict() 
         
     def addPlayer(self, player):
-        """ """
-        if not self.players.get(player.name, None):
-            self.players[player.name] = player
+        """ Add player if not already on team
+        """
+        if not self.players.get(player.pid):
+            if player.tid:
+                raise TeamError("Must first remove player %s from team %s." %
+                    (player.pid, player.tid))
+            self.players[player.pid] = player
+            player.tid = self.tid
         return self
     
-    def replacePlayer(self, player):
-        """ """
-        self.players[player.name] = player
-        return self
-    
-    def removePlayer(self, player=None,  name=""):
-        """ """
-        player = self.players.get(player.name if player else name)
+    def removePlayer(self, player):
+        """ Remove player if already on team"""
+        player = self.players.get(player.pid)
         if player:
-            del  self.players[player.name]
+            player.tid = None
+            del self.players[player.pid]
         return self
 
+team = newTeam(name="Red")
+newPlayer(name='John', team=team)
+newPlayer(name='Betty', team=team)
 
-teams = {}
-team = Team(name="Red")
-for x in [ dict(name="John"),  dict(name="Betty"), dict(name="Rich"),
-           dict(name="Susan"), ]:
-    team.addPlayer(Player(**x))
-
-teams[team.name] = team
-
-team = Team(name="Blue")
-for x in [ dict(name="Peter"),  dict(name="Jenny"), dict(name="Jack"),
-           dict(name="Trish"), ]:
-    team.addPlayer(Player(**x))
-
-teams[team.name] = team
-
-if __name__ == "__main__":
-    """Process command line args """
-    print "Teams:"
-    for tid, team in teams.items():
-        print tid, team
-    
-    print "Players:"
-    for pid, player in players.items():
-        print pid, player
+team = newTeam(name="Blue")
+newPlayer(name='Sally', team=team)
+newPlayer(name='Peter', team=team)

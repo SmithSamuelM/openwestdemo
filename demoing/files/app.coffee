@@ -9,14 +9,14 @@
 # assign to window.myApp if we want to have a global handle to the module
 
 # Main App Module 
-myApp = angular.module("myApp", ['genericDirectives', 'teamService', 'playerService'])
+myApp = angular.module("myApp", [ 'teamService', 'playerService'])
 
 myApp.config ["$locationProvider", "$routeProvider",
     ($locationProvider, $routeProvider) ->
         $locationProvider.html5Mode(true)
         
         #using absolute urls here in html5 mode
-        base = '' # for use in coffeescript string interpolation #{base}
+        base = '/owd' # for use in coffeescript string interpolation #{base}
         $routeProvider.when("#{base}/app",
             templateUrl: "#{base}/static/files/home.html"
             controller: "HomeCtlr"
