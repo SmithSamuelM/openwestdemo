@@ -8,6 +8,7 @@
     
     <script src="/owd/static/libs/angular/angular.js"></script>
     <script src="/owd/static/libs/angular/angular-resource.js"></script>
+    <script src="/owd/static/libs/angular-gold/angular-gold.js"></script>
 
     <script src="/owd/static/files/app.js"></script>
     <link rel="stylesheet" href="/owd/static/files/app.css">
@@ -17,27 +18,25 @@
   
   
   </head>
-  <body ng-init="basePath='/owd'">
+  <body ng-init="basePath='/owd'" ng-controller="NavbarCtlr">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
           <a class="brand" ng-href="{{basePath}}/app" >
             <img ng-src="{{basePath}}/static/files/leaf.png" />
           </a>
-          <a class="brand" ng-href="{{basePath}}/app">Demo</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li class="inactive">
-                <a ng-href="{{basePath}}/app/team">Team</a>
-              </li>
-              <li class="inactive">
-                <a ng-href="{{basePath}}/app/player">Player</a>
-              </li>
-              <li class="inactive">
-                <a ng-href="{{basePath}}/app/directive">Directive</a>
-              </li>
-            </ul>
-          </div><!-- /.nav-collapse -->
+          
+          <ul class="nav">
+            <li ng-class="navActive.home">
+              <a class="brand" ng-href="{{basePath}}/app">Demo</a>
+            </li>
+            <li ng-class="navActive.team">
+              <a ng-href="{{basePath}}/app/team" >Team</a>
+            </li>
+            <li ng-class="navActive.player">
+              <a ng-href="{{basePath}}/app/player" >Player</a>
+            </li>
+          </ul>
         </div>
       </div><!-- /navbar-inner -->
     </div><!-- /navbar -->
@@ -47,5 +46,22 @@
         <div class="span12"><div ng-view></div></div>
       </div><!-- /row-fluid -->
     </div><!-- /container-fluid -->
+  <pre>
+        window.location.href = {{winLoc.href}}
+        window.location.pathname = {{winLoc.pathname}}
+        $location.absUrl() = {{location.absUrl()}}
+        $location.url() = {{location.url()}}
+        $location.protocol() = {{location.protocol()}}
+        $location.host() = {{location.host()}}
+        $location.port() = {{location.port()}}
+        $location.path() = {{location.path()}}  Document Root Path
+        $location.search() = {{location.search()}}
+        $location.hash() = {{location.hash()}}
+        $route.current.templateUrl = {{route.current.templateUrl}}
+        $route.current.controller = {{route.current.controller}}
+        $route.current.params = {{route.current.params}}
+        $route.current.pathParams = {{route.current.pathParams}}
+        $route.routes = {{route.routes}}
+    </pre>
   </body>
 </html>

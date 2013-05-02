@@ -103,7 +103,7 @@ def newPlayer(name="", health=None, skill=None, team=None):
 class Player(brining.Brine):
     """ Player class """
     _Pid = 0 # unique player id class attribute 
-    _Keys =  ['pid', 'name', 'health',  'skill']
+    _Keys =  ['pid', 'name', 'health',  'skill', 'tid']
     
     def __init__(self, name="", health=5, skill=2):
         """ Initialize"""

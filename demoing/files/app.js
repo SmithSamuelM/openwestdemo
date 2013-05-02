@@ -2,7 +2,7 @@
 (function() {
   var jct, myApp;
 
-  myApp = angular.module("myApp", ['teamService', 'playerService']);
+  myApp = angular.module("myApp", ['gold', 'teamService', 'playerService']);
 
   myApp.config([
     "$locationProvider", "$routeProvider", function($locationProvider, $routeProvider) {
@@ -25,11 +25,61 @@
       }).when("" + base + "/app/player/:pid", {
         templateUrl: "" + base + "/static/files/player.html",
         controller: "PlayerCtlr"
-      }).when("" + base + "/app/directive", {
-        templateUrl: "" + base + "/static/files/directive.html",
-        controller: "DirectiveCtlr"
       }).otherwise({
         redirectTo: "" + base + "/app"
+      });
+      return true;
+    }
+  ]);
+
+  myApp.controller('NavbarCtlr', [
+    '$scope', '$routeParams', '$location', '$route', function($scope, $routeParams, $location, $route) {
+      var _ref;
+
+      $scope.location = $location;
+      $scope.route = $route;
+      $scope.winLoc = window.location;
+      console.log("NavbarCtlr");
+      $scope.alertMsg = '';
+      $scope.navActive = {
+        'home': 'inactive',
+        'team': 'inactive',
+        'player': 'inactive'
+      };
+      if ((_ref = $scope.pathNav) == null) {
+        $scope.pathNav = {
+          "/app$": "home",
+          "/app/team": "team",
+          "/app/player": "player"
+        };
+      }
+      $scope.activateNav = function(nav) {
+        var x;
+
+        $scope.navActive[nav] = 'active';
+        for (x in $scope.navActive) {
+          if (x !== nav) {
+            $scope.navActive[x] = 'inactive';
+          }
+        }
+        return true;
+      };
+      $scope.updateNav = function(newPath, oldPath) {
+        var nav, path, _ref1;
+
+        _ref1 = $scope.pathNav;
+        for (path in _ref1) {
+          nav = _ref1[path];
+          if (newPath.match(path) != null) {
+            $scope.activateNav(nav);
+            return true;
+          }
+        }
+        return true;
+      };
+      $scope.$watch('location.path()', function(newPath, oldPath) {
+        $scope.updateNav(newPath, oldPath);
+        return true;
       });
       return true;
     }
@@ -53,16 +103,48 @@
 
   myApp.controller('TeamCtlr', [
     '$scope', '$routeParams', '$location', '$route', 'TeamService', 'PlayerService', function($scope, $routeParams, $location, $route, TeamService, PlayerService) {
-      $scope.$location = $location;
-      $scope.$route = $route;
-      $scope.location = window.location;
+      $scope.location = $location;
+      $scope.route = $route;
+      $scope.winLoc = window.location;
       console.log("TeamCtlr");
+      $scope.errorMsg = '';
+      $scope.players = [];
       $scope.tid = $routeParams.tid;
       if (!$scope.tid) {
         $scope.tid = 1;
       }
+      $scope.reloadPlayers = function() {
+        var pid, player, players, _ref;
+
+        players = [];
+        _ref = $scope.team.players;
+        for (pid in _ref) {
+          player = _ref[pid];
+          players.push(player);
+        }
+        $scope.players = players;
+        return true;
+      };
       $scope.team = TeamService.get({
         id: $scope.tid
+      }, function(data, headers) {
+        console.log("TeamService get success");
+        console.log(data);
+        console.log(headers());
+        console.log($scope.team);
+        $scope.tid = $scope.team.tid;
+        $scope.errorMsg = '';
+        $scope.reloadPlayers();
+        return true;
+      }, function(response) {
+        var _ref, _ref1;
+
+        console.log("TeamService get fail");
+        console.log(response);
+        console.log((_ref = response.data) != null ? _ref.error : void 0);
+        console.log(response.headers());
+        $scope.errorMsg = ((_ref1 = response.data) != null ? _ref1.error : void 0) || response.data;
+        return true;
       });
       return true;
     }
@@ -70,9 +152,9 @@
 
   myApp.controller('PlayerCtlr', [
     '$scope', '$routeParams', '$location', '$route', 'TeamService', 'PlayerService', function($scope, $routeParams, $location, $route, TeamService, PlayerService) {
-      $scope.$location = $location;
-      $scope.$route = $route;
-      $scope.location = window.location;
+      $scope.location = $location;
+      $scope.route = $route;
+      $scope.winLoc = window.location;
       console.log("PlayerCtlr");
       $scope.pid = $routeParams.pid;
       if (!$scope.pid) {
@@ -116,9 +198,9 @@
 
   myApp.controller('DirectiveCtlr', [
     '$scope', '$location', '$route', 'TeamService', 'PlayerService', function($scope, $location, $route, TeamService, PlayerService) {
-      $scope.$location = $location;
-      $scope.$route = $route;
-      $scope.location = window.location;
+      $scope.location = $location;
+      $scope.route = $route;
+      $scope.winLoc = window.location;
       console.log("DirectiveCtlr");
       return true;
     }

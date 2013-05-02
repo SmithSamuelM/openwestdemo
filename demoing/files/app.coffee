@@ -9,7 +9,7 @@
 # assign to window.myApp if we want to have a global handle to the module
 
 # Main App Module 
-myApp = angular.module("myApp", [ 'teamService', 'playerService'])
+myApp = angular.module("myApp", ['gold', 'teamService', 'playerService'])
 
 myApp.config ["$locationProvider", "$routeProvider",
     ($locationProvider, $routeProvider) ->
@@ -32,12 +32,52 @@ myApp.config ["$locationProvider", "$routeProvider",
         ).when("#{base}/app/player/:pid",
             templateUrl: "#{base}/static/files/player.html"
             controller: "PlayerCtlr"
-        ).when("#{base}/app/directive",
-            templateUrl: "#{base}/static/files/directive.html"
-            controller: "DirectiveCtlr"
         ).otherwise redirectTo: "#{base}/app"
         return true
 ]
+
+myApp.controller('NavbarCtlr', ['$scope', '$routeParams', '$location', '$route',
+    ($scope, $routeParams, $location, $route) ->
+        $scope.location = $location
+        $scope.route = $route
+        $scope.winLoc = window.location
+        
+        console.log("NavbarCtlr")
+        
+        $scope.alertMsg = ''
+        
+        $scope.navActive = 
+            'home' : 'inactive'
+            'team'  : 'inactive'
+            'player'  : 'inactive'
+        
+        $scope.pathNav ?= 
+            "/app$": "home"
+            "/app/team": "team"
+            "/app/player": "player"
+        
+        $scope.activateNav = (nav) ->
+            $scope.navActive[nav] = 'active'
+            for x of $scope.navActive
+                if x != nav
+                    $scope.navActive[x] = 'inactive'
+            return true
+        
+        $scope.updateNav = (newPath, oldPath) ->
+            #only called when value different except first time
+            for path, nav of $scope.pathNav
+                if newPath.match(path)?
+                    $scope.activateNav(nav)
+                    return true
+            return true
+        
+        $scope.$watch('location.path()', (newPath, oldPath) ->
+            $scope.updateNav(newPath, oldPath)
+            return true
+        )
+
+        return true
+])
 
 myApp.controller('HomeCtlr', ['$scope', '$location', '$route', 
     'TeamService', 'PlayerService',
@@ -58,17 +98,44 @@ myApp.controller('HomeCtlr', ['$scope', '$location', '$route',
 myApp.controller('TeamCtlr', ['$scope', '$routeParams', '$location', '$route', 
     'TeamService', 'PlayerService',
     ($scope, $routeParams, $location, $route, TeamService, PlayerService) ->
-        $scope.$location = $location
-        $scope.$route = $route
-        $scope.location = window.location
+        $scope.location = $location
+        $scope.route = $route
+        $scope.winLoc = window.location
         
         console.log("TeamCtlr")
-        
+        $scope.errorMsg = ''
+        $scope.players = []
         $scope.tid = $routeParams.tid
         if not $scope.tid
             $scope.tid = 1
             
-        $scope.team = TeamService.get({id: $scope.tid})
+        $scope.reloadPlayers = () ->
+            # convert hash of players to array of players
+            players = []
+            for pid, player of $scope.team.players
+                players.push(player)
+            $scope.players = players
+            return true
+                
+        $scope.team = TeamService.get({id: $scope.tid},
+            (data, headers) ->
+                console.log("TeamService get success")
+                console.log(data)
+                console.log(headers())
+                console.log($scope.team)
+                $scope.tid = $scope.team.tid
+                $scope.errorMsg = ''
+                $scope.reloadPlayers()
+                return true
+            ,
+            (response) ->
+                console.log("TeamService get fail")
+                console.log(response)
+                console.log(response.data?.error)
+                console.log(response.headers())
+                $scope.errorMsg=response.data?.error or response.data
+                return true
+            )
         
         return true
 ])
@@ -76,9 +143,9 @@ myApp.controller('TeamCtlr', ['$scope', '$routeParams', '$location', '$route',
 myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route', 
     'TeamService', 'PlayerService',
     ($scope, $routeParams, $location, $route, TeamService, PlayerService) ->
-        $scope.$location = $location
-        $scope.$route = $route
-        $scope.location = window.location
+        $scope.location = $location
+        $scope.route = $route
+        $scope.winLoc = window.location
         
         console.log("PlayerCtlr")
         
@@ -130,9 +197,10 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
 myApp.controller('DirectiveCtlr', ['$scope', '$location', '$route', 
     'TeamService', 'PlayerService',
     ($scope, $location, $route, TeamService, PlayerService) ->
-        $scope.$location = $location
-        $scope.$route = $route
-        $scope.location = window.location
+        $scope.location = $location
+        $scope.route = $route
+        $scope.winLoc = window.location
+        
         console.log("DirectiveCtlr")
 
         

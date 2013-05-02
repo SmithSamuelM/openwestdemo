@@ -9,6 +9,30 @@
 #
 
 
+
+base = '/owd'
+
+angular.module("teamService", ["ngResource"]).factory "TeamService", 
+    ['$resource', ($resource) -> $resource "#{base}/team/:id", 
+        {id: '@id'},
+        put: 
+            method: 'PUT'
+            params: {}
+    ]
+    
+angular.module("playerService", ["ngResource"]).factory "PlayerService", 
+    ['$resource', ($resource) -> $resource "#{base}/player/:id", 
+        {id: '@id'},
+        update: 
+            method: 'PUT'
+            params: {}
+        create:
+            method: 'POST'
+            params: {id: ''}
+    ]
+
+
+
 angular.module("orderService", ["ngResource"]).factory "OrderService", 
     ['$resource', ($resource) -> $resource "/japn/backend/order/:id", 
         {id: '@pid'},
@@ -99,25 +123,3 @@ angular.module("statusActionService", []).factory "StatusActionService",
 # $scope.actionPromise = OrderActionService.call(pid, 'refresh')
 # sends post to "/japn/backend/order/2/refresh"
 
-
-
-base = '/owd'
-
-angular.module("teamService", ["ngResource"]).factory "TeamService", 
-    ['$resource', ($resource) -> $resource "#{base}/backend/teams/:id", 
-        {id: '@id'},
-        put: 
-            method: 'PUT'
-            params: {}
-    ]
-    
-angular.module("playerService", ["ngResource"]).factory "PlayerService", 
-    ['$resource', ($resource) -> $resource "#{base}/backend/players/:id", 
-        {id: '@id'},
-        update: 
-            method: 'PUT'
-            params: {}
-        create:
-            method: 'POST'
-            params: {id: ''}
-    ]

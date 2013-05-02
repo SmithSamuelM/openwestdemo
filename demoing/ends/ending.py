@@ -33,8 +33,8 @@ def testGet():
     return content
 
 
-@app.route('/backend/teams') #angular strips trailing slash if no <tid>
-def teamsGet():
+@app.route('/team') #angular strips trailing slash if no <tid>
+def teamQueryGet():
     
     name = bottle.request.query.get('name', '')
     teams =  []
@@ -49,8 +49,8 @@ def teamsGet():
     return json.dumps(teams, default=brining.default, indent=2)
 
 
-@app.route('/backend/teams/<tid>') 
-def teamIdGet(tid):
+@app.route('/team/<tid>') 
+def teamRead(tid):
     try:
         tid = int(tid)
     except ValueError:
@@ -59,10 +59,11 @@ def teamIdGet(tid):
     team = teaming.teams.get(tid, None)
     if not team:
         bottle.abort(404, "Team '%s' not found." % tid)
-    return team._dumpable(deep=True)
+    bottle.response.set_header('content-type', 'application/json')
+    return team._dumps()
 
-@app.get('/backend/players') #angular strips trailing slash if no <pid>
-def playersGet():
+@app.get('/player') #angular strips trailing slash if no <pid>
+def playerQuery():
     name = bottle.request.query.get('name', '')
     players = []
     for player in teaming.players.values():
@@ -75,21 +76,9 @@ def playersGet():
     bottle.response.set_header('content-type', 'application/json')
     return json.dumps(players, default=brining.default, indent=2) 
 
-@app.get('/backend/players/<pid>') 
-def playerIdGet(pid):
-    try:
-        pid = int(pid)
-    except ValueError:
-        bottle.abort(400, "Invalid player id %s" % pid)    
-    
-    player = teaming.players.get(pid, None)
-    if not player:
-        bottle.abort(404, "Player '%s' not found." % (pid,))    
-    return player._dumpable(deep=true)
-
-@app.get('/backend/players/create/create') #testing only
-@app.post('/backend/players') 
-def playerIdPost():
+@app.get('/player/create/create') #testing only
+@app.post('/player') 
+def playerCreate():
     """Create player"""     
     data = bottle.request.json
     if not data:
@@ -115,9 +104,22 @@ def playerIdPost():
     
     return player
 
-@app.get('/backend/players/<pid>/update') #testing only
-@app.put('/backend/players/<pid>') 
-def playerIdPut(pid):
+@app.get('/player/<pid>') 
+def playerRead(pid):
+    try:
+        pid = int(pid)
+    except ValueError:
+        bottle.abort(400, "Invalid player id %s" % pid)    
+    
+    player = teaming.players.get(pid, None)
+    if not player:
+        bottle.abort(404, "Player '%s' not found." % (pid,))    
+    return player._dumpable(deep=true)
+
+
+@app.get('/players/<pid>/update') #testing only
+@app.put('/players/<pid>') 
+def playerUpdate(pid):
     """Update player"""
     try:
         pid = int(pid)
@@ -159,9 +161,9 @@ def playerIdPut(pid):
     
     return player
 
-@app.get('/backend/players/<pid>/remove') #testing only
-@app.delete('/backend/players/<pid>') 
-def teamPlayerDelete(pid):
+@app.get('/player/<pid>/remove') #testing only
+@app.delete('/players/<pid>') 
+def PlayerDelete(pid):
     """Delete player"""
     try:
         pid = int(pid)

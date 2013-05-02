@@ -2,6 +2,40 @@
 (function() {
   var base;
 
+  base = '/owd';
+
+  angular.module("teamService", ["ngResource"]).factory("TeamService", [
+    '$resource', function($resource) {
+      return $resource("" + base + "/team/:id", {
+        id: '@id'
+      }, {
+        put: {
+          method: 'PUT',
+          params: {}
+        }
+      });
+    }
+  ]);
+
+  angular.module("playerService", ["ngResource"]).factory("PlayerService", [
+    '$resource', function($resource) {
+      return $resource("" + base + "/player/:id", {
+        id: '@id'
+      }, {
+        update: {
+          method: 'PUT',
+          params: {}
+        },
+        create: {
+          method: 'POST',
+          params: {
+            id: ''
+          }
+        }
+      });
+    }
+  ]);
+
   angular.module("orderService", ["ngResource"]).factory("OrderService", [
     '$resource', function($resource) {
       return $resource("/japn/backend/order/:id", {
@@ -95,40 +129,6 @@
           });
         }
       };
-    }
-  ]);
-
-  base = '/owd';
-
-  angular.module("teamService", ["ngResource"]).factory("TeamService", [
-    '$resource', function($resource) {
-      return $resource("" + base + "/backend/teams/:id", {
-        id: '@id'
-      }, {
-        put: {
-          method: 'PUT',
-          params: {}
-        }
-      });
-    }
-  ]);
-
-  angular.module("playerService", ["ngResource"]).factory("PlayerService", [
-    '$resource', function($resource) {
-      return $resource("" + base + "/backend/players/:id", {
-        id: '@id'
-      }, {
-        update: {
-          method: 'PUT',
-          params: {}
-        },
-        create: {
-          method: 'POST',
-          params: {
-            id: ''
-          }
-        }
-      });
     }
   ]);
 
