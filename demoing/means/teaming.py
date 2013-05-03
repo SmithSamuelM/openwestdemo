@@ -59,13 +59,12 @@ def fetchPlayer(name=""):
             return player
     return None
 
-def newTeam(name=""):
+def newTeam(name=None):
     """ Create new team and add to teams
         Team names must be unique
     """
-    name = name.strip()
-    if not name:
-        raise TeamingError("Team name must not be empty.")
+    if name:
+        name = name.strip()
     
     if fetchTeam(name):
         raise TeamingError("Team with name '%s' already exists." % name )
@@ -116,19 +115,27 @@ class Player(brining.Brine):
     
     def changeTeam(self, team):
         """ Change current .team to team"""
-        if self.tid != team.tid:
-            teams[self.tid].removePlayer(player=self)
-            team.addPlayer(self)
+        
+        if team and self.tid != team.tid or team is None:
+            if self.tid and self.tid in teams:
+                teams[self.tid].removePlayer(player=self)
+            if team:
+                team.addPlayer(self)
         
 class Team(brining.Brine):
     """ Team class  """
     _Tid = 0 # unique team id class attribute
     _Keys = ['tid', 'name', 'players']
     
-    def __init__(self, name=""):
+    def __init__(self, name=None):
         """ Init team with unique tid"""
         Team._Tid += 1
         self.tid = Team._Tid
+        if not name:
+            name = "Team%s" % self.tid
+            while fetchTeam(name):
+                name = "%s%s" % (name,  random.randint(0, 9))
+                                 
         self.name = name.strip()
         self.players = ODict() 
         

@@ -1,3 +1,11 @@
+<div class="row-fluid">
+  <div class="span3">
+    <div class="form-inline">
+      <label class="control-label" for="team-query-text">Filter</label>
+      <input id="team-query-text" ng-model="teamQuery">
+    </div>
+  </div><!--/span3-->
+</div><!--/row-fluid-->
 
 <div class="row-fluid">
   <div class="span3">
@@ -5,12 +13,12 @@
       <caption  style="text-align:left"><h3>Teams</h3></caption>
       <thead>
         <tr>
-          <th>Id</th>
-          <th>Name</th>
+          <th><a href="" ng-click="sortField='tid';reverse=!reverse">Id</a></th>
+          <th><a href="" ng-click="sortField='name';reverse=!reverse">Name</a></th>
         </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="team in teams">
+        <tr ng-repeat="team in teams | filter:teamQuery | orderBy:sortField:reverse" >
           <td><a href="{{basePath}}/app/team/{{team.tid}}" title="Team Detail">{{team.tid}}</a></td>
           <td>{{team.name}}</td>
         </tr>

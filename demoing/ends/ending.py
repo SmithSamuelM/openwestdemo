@@ -48,6 +48,22 @@ def teamQueryGet():
     bottle.response.set_header('content-type', 'application/json')
     return json.dumps(teams, default=brining.default, indent=2)
 
+@app.get('/team/create/create') #testing only
+@app.post('/team') 
+def teamCreate():
+    """Create team"""     
+    data = bottle.request.json
+    if not data:
+        bottle.abort(400, "Create data missing.")
+    
+    name =  data.get('name', None)
+    if teaming.fetchTeam(name):
+        bottle.abort(400, "Team '%s' already exists." % name)
+        
+    team = teaming.newTeam(name = name)
+    
+    bottle.response.set_header('content-type', 'application/json')
+    return team._dumps()
 
 @app.route('/team/<tid>') 
 def teamRead(tid):
@@ -59,8 +75,98 @@ def teamRead(tid):
     team = teaming.teams.get(tid, None)
     if not team:
         bottle.abort(404, "Team '%s' not found." % tid)
+    
     bottle.response.set_header('content-type', 'application/json')
     return team._dumps()
+
+@app.get('/team/<tid>/update') #testing only
+@app.put('/team/<tid>') 
+def teamUpdate(tid):
+    """Update team"""
+    try:
+        tid = int(tid)
+    except ValueError:
+        bottle.abort(400, "Invalid team id %s" % tid)      
+    
+    team = teaming.teams.get(tid)
+    if not team:
+        bottle.abort(404, "Team '%s' not found." % (tid,))     
+    
+    data = bottle.request.json
+    if not data:
+        bottle.abort(400, "Update data missing.")
+    
+    data = scrubTeamData(data)
+    
+    dtid = data.get('tid')
+    if dtid and dtid != tid:
+        bottle.abort(400, "Tid in request body not match tid in url.")
+    
+    name = data.get('name')
+    if name:
+        otherTeam = teaming.fetchTeam(name)
+        if otherTeam and otherTeam.tid != team.tid:
+            bottle.abort(400, "Team name '%s' already used." % name)
+        team.name = name
+    
+    bottle.response.set_header('content-type', 'application/json')
+    return team._dumps()
+
+@app.get('/team/<tid>/remove') #testing only
+@app.delete('/team/<tid>') 
+def TeamDelete(tid):
+    """Delete team"""
+    try:
+        tid = int(tid)
+    except ValueError:
+        bottle.abort(400, "Invalid team id %s" % tid)
+        
+    team = teaming.teams.get(tid)
+    if not team:
+        bottle.abort(404, "Team '%s' not found." % (tid,))
+    
+    for player in team.players.values():
+        team.removePlayer(player)
+    
+    del teaming.teams[team.tid]
+    
+    return {}
+
+@app.get('/team/<tid>/<action>') #testing
+@app.post('/team/<tid>/<action>') 
+def teamAction(tid, action):
+    """ Perform action on team
+        
+    """
+    try:
+        tid = int(tid)
+    except ValueError as ex:
+        bottle.abort(400, "Invalid team id %s" % tid)
+        
+    team = teaming.teams.get(tid, None)
+    if not team:
+        bottle.abort(404, "Team '%s' not found." % tid)
+    
+    return dict(action=action, result=True)
+
+def scrubTeamData(data):
+    """ Validate team data"""
+    for key in data.keys():
+        if key not in ['tid', 'name']:
+            del data[key]
+            
+    name = data.get('name')
+    if not name:
+        bottle.abort(400, "Name required.")
+    
+    for key in ['tid']:
+        if data[key] is not None:
+            try:
+                data[key] = int(data[key])
+            except ValueError, TypeError:
+                bottle.abort(400, "Key %s not an integer." % key)
+    
+    return data
 
 @app.get('/player') #angular strips trailing slash if no <pid>
 def playerQuery():
@@ -82,27 +188,17 @@ def playerCreate():
     """Create player"""     
     data = bottle.request.json
     if not data:
-        bottle.abort(400, "Empty order data in request body.")
+        bottle.abort(400, "Create data missing.")
     
-    name = data.get('name')
-    if not name:
-        bottle.abort(400, "Name required.")
+    data = scrubPlayerData(data)
     
-    try:
-        tid = int(data.get('tid'))
-    except ValueError, TypeError:
-        tid = None
-        data['tid'] = None
+    tid = data.get('tid')
     team = teaming.teams.get(tid) if tid else None
     
-    player = newPlayer(name = name, team=team)
-    for key, val in data.items():
-        if key in player: #only change exiting fields
-            player[key] = val
-    if team:
-        team['players'][player['id']] = player
+    player = teaming.newPlayer(name = data.get('name'), team=team,
+                       health=data.get('health'),  skill=data.get('skill'))
     
-    return player
+    return player._dumpable()
 
 @app.get('/player/<pid>') 
 def playerRead(pid):
@@ -115,55 +211,44 @@ def playerRead(pid):
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))
     
-    return player._dumpable(deep=True)
+    return player._dumpable()
 
 
-@app.get('/players/<pid>/update') #testing only
-@app.put('/players/<pid>') 
+@app.get('/player/<pid>/update') #testing only
+@app.put('/player/<pid>') 
 def playerUpdate(pid):
     """Update player"""
     try:
         pid = int(pid)
     except ValueError:
         bottle.abort(400, "Invalid player id %s" % pid)      
-    player = teaming.players.get(pid, None)
+    
+    player = teaming.players.get(pid)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))     
+    
     data = bottle.request.json
     if not data:
-        bottle.abort(400, "Empty order data in request body.")
+        bottle.abort(400, "Update data missing.")
     
-    dpid = data.get('id')
+    data = scrubPlayerData(data)
+    
+    dpid = data.get('pid')
     if dpid and  dpid != pid:
-        bottle.abort(400, "ID in request body not match ID in url.")
+        bottle.abort(400, "Pid in request body not match pid in url.")
         
-    name = data.get('name')
-    if not name:
-        bottle.abort(400, "Name required.")
+    if 'tid' in data:
+        team = teaming.teams.get(data['tid'])
+        player.changeTeam(team)
     
-    newTid = int(data.get('tid')) if data.get('tid') else None
-    newTeam = teaming.teams.get(newTid)
+    for key in ['name', 'health', 'skill']:
+        if key in data: #only change exiting fields
+            setattr(player, key, data[key])
     
-    oldTid = int(player.get('tid')) if player.get('tid') else None
-    oldTeam = teaming.teams.get(oldTid)
-    
-    if oldTeam and newTeam != oldTeam and oldTeam['players'][pid]:
-        del oldTeam['players'][pid]
-    
-    if newTeam and newTeam != oldTeam:
-        newTeam['players'][player['id']] = player
-        
-    if not newTeam:
-        data['tid'] = None
-    
-    for key, val in data.items():
-        if key in player: #only change exiting fields
-            player[key] = val
-    
-    return player
+    return player._dumpable()
 
 @app.get('/player/<pid>/remove') #testing only
-@app.delete('/players/<pid>') 
+@app.delete('/player/<pid>') 
 def PlayerDelete(pid):
     """Delete player"""
     try:
@@ -171,16 +256,33 @@ def PlayerDelete(pid):
     except ValueError:
         bottle.abort(400, "Invalid player id %s" % pid)
         
-    player = teaming.players.get(pid, None)
+    player = teaming.players.get(pid)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))
     
-    tid = player.get('tid')
-    team = teaming.teams.get(tid) if tid else none    
+    team = teaming.teams.get(player.tid)
+    if team:
+        team.removePlayer(player)
     
-    if team['players'][player['id']]:
-        del team['players'][player['id']]
-    
-    del teaming.players[player['id']]
+    del teaming.players[player.pid]
     
     return {}
+
+def scrubPlayerData(data):
+    """ Validate player data"""
+    for key in data.keys():
+        if key not in ['pid', 'name', 'skill', 'health', 'tid']:
+            del data[key]
+            
+    name = data.get('name')
+    if not name:
+        bottle.abort(400, "Name required.")
+    
+    for key in ['pid', 'skill', 'health', 'tid']:
+        if data[key] is not None:
+            try:
+                data[key] = int(data[key])
+            except ValueError, TypeError:
+                bottle.abort(400, "Key %s not an integer." % key)
+    
+    return data

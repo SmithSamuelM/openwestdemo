@@ -7,9 +7,19 @@
   angular.module("teamService", ["ngResource"]).factory("TeamService", [
     '$resource', function($resource) {
       return $resource("" + base + "/team/:id", {
-        id: '@id'
+        id: '@tid'
       }, {
-        put: {
+        create: {
+          method: 'POST',
+          params: {
+            id: ''
+          }
+        },
+        read: {
+          method: 'GET',
+          params: {}
+        },
+        update: {
           method: 'PUT',
           params: {}
         }
@@ -20,106 +30,39 @@
   angular.module("playerService", ["ngResource"]).factory("PlayerService", [
     '$resource', function($resource) {
       return $resource("" + base + "/player/:id", {
-        id: '@id'
-      }, {
-        update: {
-          method: 'PUT',
-          params: {}
-        },
-        create: {
-          method: 'POST',
-          params: {
-            id: ''
-          }
-        }
-      });
-    }
-  ]);
-
-  angular.module("orderService", ["ngResource"]).factory("OrderService", [
-    '$resource', function($resource) {
-      return $resource("/japn/backend/order/:id", {
         id: '@pid'
       }, {
-        update: {
-          method: 'PUT',
-          params: {}
-        },
         create: {
           method: 'POST',
           params: {
             id: ''
           }
         },
-        refresh: {
+        read: {
           method: 'GET',
-          params: {
-            refresh: ''
-          }
-        }
-      });
-    }
-  ]);
-
-  angular.module("orderActionService", []).factory("OrderActionService", [
-    '$http', 'OrderService', function($http, OrderService) {
-      return {
-        call: function($scope, pid, action) {
-          return $http.post("/japn/backend/order/" + pid + "/" + action).success(function(data, status, headers, config) {
-            console.log("OrderActionService " + pid + " " + action + " success");
-            return true;
-          }).error(function(data, status, headers, config) {
-            console.log("OrderActionService " + pid + " " + action + " failure");
-            console.log(config);
-            console.log(status);
-            console.log(headers());
-            console.log(data);
-            $scope.alert = (data != null ? data.error : void 0) || data;
-            return true;
-          });
-        }
-      };
-    }
-  ]);
-
-  angular.module("numberService", ["ngResource"]).factory("NumberService", [
-    '$resource', function($resource) {
-      return $resource("/japn/backend/number/:id", {
-        id: '@id'
-      }, {
+          params: {}
+        },
         update: {
           method: 'PUT',
           params: {}
-        },
-        create: {
-          method: 'POST',
-          params: {
-            id: ''
-          }
-        },
-        refresh: {
-          method: 'GET',
-          params: {
-            refresh: ''
-          }
         }
       });
     }
   ]);
 
-  angular.module("statusActionService", []).factory("StatusActionService", [
+  angular.module("teamActionService", []).factory("TeamActionService", [
     '$http', function($http) {
       return {
-        call: function($scope, action) {
-          return $http.get("/jct/status").success(function(data, status, headers, config) {
-            console.log("StatusActionService success");
+        call: function($scope, tid, action) {
+          return $http.get("" + base + "/team/" + tid + "/" + action).success(function(data, status, headers, config) {
+            console.log("TeamActionService " + tid + " " + action + " success");
             console.log(config);
             console.log(status);
             console.log(headers());
             console.log(data);
             return true;
           }).error(function(data, status, headers, config) {
-            console.log("StatusActionService failure");
+            console.log("TeamActionService failure");
             console.log(config);
             console.log(status);
             console.log(headers());
