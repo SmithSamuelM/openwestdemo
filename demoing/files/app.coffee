@@ -9,7 +9,7 @@
 # assign to window.myApp if we want to have a global handle to the module
 
 # Main App Module 
-myApp = angular.module("myApp", ['gold', 'teamService', 'playerService'])
+myApp = angular.module("myApp", ['gold', 'teamService', 'playerService', 'teamCompeteService'])
 
 myApp.config ["$locationProvider", "$routeProvider",
     ($locationProvider, $routeProvider) ->
@@ -97,16 +97,47 @@ myApp.controller('NavbarCtlr', ['$scope', '$routeParams', '$location', '$route',
 ])
 
 myApp.controller('HomeCtlr', ['$scope', '$location', '$route', 
-    'TeamService', 'PlayerService',
-    ($scope, $location, $route, TeamService, PlayerService) ->
+    'TeamService', 'PlayerService', 'TeamCompeteService',
+    ($scope, $location, $route, TeamService, PlayerService, TeamCompeteService) ->
         $scope.$location = $location
         $scope.$route = $route
         $scope.location = window.location
         
         console.log("HomeCtlr")
-        $scope.teams = TeamService.query({id: ""})
+        $scope.errorMsg = ""
+        
+        $scope.teamOptions = []
+        $scope.updateTeamOptions = () ->
+            teamOptions = [{name: "None", tid: null}]
+            for team in $scope.teams
+                teamOptions.push({name: team.name, tid: team.tid})
+            $scope.teamOptions = teamOptions
+            return true
+            
+        $scope.teams = TeamService.query({id: ""},
+            (data, headers) ->
+                $scope.errorMsg = ''
+                $scope.updateTeamOptions()
+                return true
+            ,
+            (response) ->
+                $scope.errorMsg=response.data?.error or response.data
+                return true
+            )
         $scope.players = PlayerService.query({id: ""})
         
+        $scope.compete = (tid1, tid2) ->
+            if tid1 == tid2 or !tid1 or !tid2
+                return false
+            
+            $scope.competePromise = TeamCompeteService.call($scope, {tid1: tid1, tid2:tid2})
+            $scope.competePromise.success( (data,status, headers, config) ->
+                console.log("Compete success")
+                $scope.winner = data['winner']
+                return true
+            )
+            return true
+            
         
         return true
 ])
@@ -397,7 +428,9 @@ myApp.controller('TeamCtlr', ['$scope', '$routeParams', '$location', '$route',
         $scope.tid = $routeParams.tid
         if not $scope.tid
             $scope.tid = 1
-            
+        
+        $scope.players = []
+        
         $scope.reloadPlayers = () ->
             # convert hash of players to array of players
             players = []
@@ -405,7 +438,9 @@ myApp.controller('TeamCtlr', ['$scope', '$routeParams', '$location', '$route',
                 players.push(player)
             $scope.players = players
             return true
-                
+        
+        $scope.team = []
+        
         $scope.team = TeamService.get({id: $scope.tid},
             (data, headers) ->
                 console.log("TeamService get success")
@@ -443,69 +478,6 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
         if not $scope.pid
             $scope.pid = 1
         
-        $scope.playerInvalid = (index) ->
-            console.log("Inner playerForm#{index} undefined") if not $scope.playersForm["playerForm" + index]?
-            if  !$scope.players[index]?.name 
-                return true
-            else 
-                return false
-        
-        $scope.numberInvalid = (index) ->
-            #console.log("Inner numberForm#{index} undefined") if not $scope.orderForm["numberForm" + index]?
-            if  $scope.numbers[index]?.use and
-                    ($scope?.orderForm["numberForm" + index]?.npa.$error.pattern or
-                    $scope?.orderForm["numberForm" + index]?.nxx.$error.pattern or
-                    $scope?.orderForm["numberForm" + index]?.xxxx.$error.pattern)
-                return true
-            else 
-                return false
-        
-        $scope.teamOptions = []
-        $scope.updateTeamOptions = () ->
-            teamOptions = [{name: "None", tid: null}]
-            for team in $scope.teams
-                teamOptions.push({name: team.name, tid: team.tid})
-            $scope.teamOptions = teamOptions
-            return true
-            
-        $scope.teams = TeamService.query({id: ""},
-            (data, headers) ->
-                console.log("TeamService get success")
-                console.log(data)
-                console.log(headers())
-                console.log($scope.teams)
-                $scope.errorMsg = ''
-                $scope.updateTeamOptions()
-                return true
-            ,
-            (response) ->
-                console.log("TeamService get fail")
-                console.log(response)
-                console.log(response.data?.error)
-                console.log(response.headers())
-                $scope.errorMsg=response.data?.error or response.data
-                return true
-        )
-        
-        $scope.players = PlayerService.query({id: ""},
-            (data, headers) ->
-                console.log("PlayerService get success")
-                console.log(data)
-                console.log(headers())
-                console.log($scope.players)
-                $scope.errorMsg = ''
-                return true
-            ,
-            (response) ->
-                console.log("PlayerService get fail")
-                console.log(response)
-                console.log(response.data?.error)
-                console.log(response.headers())
-                $scope.errorMsg=response.data?.error or response.data
-                return true
-        )
-        
-        
 
         $scope.player = PlayerService.get({id: $scope.pid},
             (data, headers) ->
@@ -519,28 +491,7 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
                 console.log(response)
                 console.log(response.headers())
             )
-        
-        $scope.savePlayer = (pid) -> 
-            $scope.errored=false
-            $scope.alert=""
-            if $scope.playerForm.$invalid
-                $scope.playerForm.$dirty = true
-                $scope.errored = true
-                $scope.alert = "Some values are missing or invalid."
-                return
             
-            $scope.player.$put({},
-                (data,headers)->
-                    console.log("PlayerService put success")
-                    console.log(data)
-                    console.log(headers())
-                ,
-                (response)->
-                    console.log("PlayerService put fail")
-                    console.log(response)
-                    console.log(response.headers())
-            )
-        
         return true
 ])
 

@@ -57,8 +57,8 @@ angular.module("playerService", ["ngResource"]).factory "PlayerService",
 
 #usage
 # tid = 2
-# $scope.actionPromise = TeamActionService.call(tid, 'compete')
-# sends post to "/owd/team/2/compete"
+# $scope.actionPromise = TeamActionService.call($scope, tid, 'practice')
+# sends post to "/owd/team/2/practice"
 
 angular.module("teamActionService", []).factory "TeamActionService", 
     ['$http', ($http) -> 
@@ -79,9 +79,39 @@ angular.module("teamActionService", []).factory "TeamActionService",
                     console.log(status)
                     console.log(headers())
                     console.log(data)
-                    $scope.alert=data?.error or data
+                    $scope.errorMsg=data?.error or data
                     return true
                 )
         }
     ] 
 
+#usage
+# tid1 = 2
+# tid2 = 3
+# $scope.actionPromise = TeamCompleteService.call($scope, {tid1: tid1, tid2,})
+# sends post to "/owd/team/compete"
+
+angular.module("teamCompeteService", []).factory "TeamCompeteService", 
+    ['$http', ($http) -> 
+        { #object literal
+            call: ($scope, params) -> 
+                $http.get( "#{base}/team/compete", {params: params} )
+                .success((data, status, headers, config) ->
+                    console.log("TeamCompeteService #{params}")
+                    console.log(config)
+                    console.log(status)
+                    console.log(headers())
+                    console.log(data)
+                    return true
+                )
+                .error((data, status, headers, config) -> 
+                    console.log("TeamCompeteService failure")
+                    console.log(config)
+                    console.log(status)
+                    console.log(headers())
+                    console.log(data)
+                    $scope.errorMsg=data?.error or data
+                    return true
+                )
+        }
+    ] 

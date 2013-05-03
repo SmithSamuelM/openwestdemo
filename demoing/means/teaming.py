@@ -157,6 +157,13 @@ class Team(brining.Brine):
             player.tid = None
             del self.players[player.pid]
         return self
+    
+    def score(self):
+        " Compute score"
+        score = 0
+        for player in self.players.values():
+            score += player.skill +  player.health +  random.randint(0, 5)
+        return score
 
 team = newTeam(name="Red")
 newPlayer(name='John', team=team)

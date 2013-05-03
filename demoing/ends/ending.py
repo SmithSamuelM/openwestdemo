@@ -132,6 +132,31 @@ def TeamDelete(tid):
     
     return {}
 
+@app.get('/team/compete') #testing
+@app.post('/team/compete') 
+def teamCompete():
+    """ Perform compete """
+    tid1 = bottle.request.query.get("tid1")
+    tid2 = bottle.request.query.get("tid2")
+    try:
+        tid1 = int(tid1)
+    except ValueError:
+        bottle.abort(400, "Invalid team id %s" % tid1)
+    
+    try:
+        tid2 = int(tid2)
+    except ValueError:
+        bottle.abort(400, "Invalid team id %s" % tid2)
+    
+    
+    team1 =  teaming.teams.get(tid1)
+    team2 =  teaming.teams.get(tid2)
+    winner = None
+    if team1 != team2:
+        winner = team1 if team1.score() > team2.score() else team2
+        
+    return dict(winner= winner.name if winner else None)
+
 @app.get('/team/<tid>/<action>') #testing
 @app.post('/team/<tid>/<action>') 
 def teamAction(tid, action):

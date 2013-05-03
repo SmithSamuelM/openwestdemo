@@ -67,7 +67,34 @@
             console.log(status);
             console.log(headers());
             console.log(data);
-            $scope.alert = (data != null ? data.error : void 0) || data;
+            $scope.errorMsg = (data != null ? data.error : void 0) || data;
+            return true;
+          });
+        }
+      };
+    }
+  ]);
+
+  angular.module("teamCompeteService", []).factory("TeamCompeteService", [
+    '$http', function($http) {
+      return {
+        call: function($scope, params) {
+          return $http.get("" + base + "/team/compete", {
+            params: params
+          }).success(function(data, status, headers, config) {
+            console.log("TeamCompeteService " + params);
+            console.log(config);
+            console.log(status);
+            console.log(headers());
+            console.log(data);
+            return true;
+          }).error(function(data, status, headers, config) {
+            console.log("TeamCompeteService failure");
+            console.log(config);
+            console.log(status);
+            console.log(headers());
+            console.log(data);
+            $scope.errorMsg = (data != null ? data.error : void 0) || data;
             return true;
           });
         }

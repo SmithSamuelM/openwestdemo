@@ -2,7 +2,7 @@
 (function() {
   var myApp;
 
-  myApp = angular.module("myApp", ['gold', 'teamService', 'playerService']);
+  myApp = angular.module("myApp", ['gold', 'teamService', 'playerService', 'teamCompeteService']);
 
   myApp.config([
     "$locationProvider", "$routeProvider", function($locationProvider, $routeProvider) {
@@ -107,17 +107,63 @@
   ]);
 
   myApp.controller('HomeCtlr', [
-    '$scope', '$location', '$route', 'TeamService', 'PlayerService', function($scope, $location, $route, TeamService, PlayerService) {
+    '$scope', '$location', '$route', 'TeamService', 'PlayerService', 'TeamCompeteService', function($scope, $location, $route, TeamService, PlayerService, TeamCompeteService) {
       $scope.$location = $location;
       $scope.$route = $route;
       $scope.location = window.location;
       console.log("HomeCtlr");
+      $scope.errorMsg = "";
+      $scope.teamOptions = [];
+      $scope.updateTeamOptions = function() {
+        var team, teamOptions, _i, _len, _ref;
+
+        teamOptions = [
+          {
+            name: "None",
+            tid: null
+          }
+        ];
+        _ref = $scope.teams;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          team = _ref[_i];
+          teamOptions.push({
+            name: team.name,
+            tid: team.tid
+          });
+        }
+        $scope.teamOptions = teamOptions;
+        return true;
+      };
       $scope.teams = TeamService.query({
         id: ""
+      }, function(data, headers) {
+        $scope.errorMsg = '';
+        $scope.updateTeamOptions();
+        return true;
+      }, function(response) {
+        var _ref;
+
+        $scope.errorMsg = ((_ref = response.data) != null ? _ref.error : void 0) || response.data;
+        return true;
       });
       $scope.players = PlayerService.query({
         id: ""
       });
+      $scope.compete = function(tid1, tid2) {
+        if (tid1 === tid2 || !tid1 || !tid2) {
+          return false;
+        }
+        $scope.competePromise = TeamCompeteService.call($scope, {
+          tid1: tid1,
+          tid2: tid2
+        });
+        $scope.competePromise.success(function(data, status, headers, config) {
+          console.log("Compete success");
+          $scope.winner = data['winner'];
+          return true;
+        });
+        return true;
+      };
       return true;
     }
   ]);
@@ -439,6 +485,7 @@
       if (!$scope.tid) {
         $scope.tid = 1;
       }
+      $scope.players = [];
       $scope.reloadPlayers = function() {
         var pid, player, players, _ref;
 
@@ -451,6 +498,7 @@
         $scope.players = players;
         return true;
       };
+      $scope.team = [];
       $scope.team = TeamService.get({
         id: $scope.tid
       }, function(data, headers) {
@@ -486,87 +534,6 @@
       if (!$scope.pid) {
         $scope.pid = 1;
       }
-      $scope.playerInvalid = function(index) {
-        var _ref;
-
-        if ($scope.playersForm["playerForm" + index] == null) {
-          console.log("Inner playerForm" + index + " undefined");
-        }
-        if (!((_ref = $scope.players[index]) != null ? _ref.name : void 0)) {
-          return true;
-        } else {
-          return false;
-        }
-      };
-      $scope.numberInvalid = function(index) {
-        var _ref, _ref1, _ref2, _ref3;
-
-        if (((_ref = $scope.numbers[index]) != null ? _ref.use : void 0) && (($scope != null ? (_ref1 = $scope.orderForm["numberForm" + index]) != null ? _ref1.npa.$error.pattern : void 0 : void 0) || ($scope != null ? (_ref2 = $scope.orderForm["numberForm" + index]) != null ? _ref2.nxx.$error.pattern : void 0 : void 0) || ($scope != null ? (_ref3 = $scope.orderForm["numberForm" + index]) != null ? _ref3.xxxx.$error.pattern : void 0 : void 0))) {
-          return true;
-        } else {
-          return false;
-        }
-      };
-      $scope.teamOptions = [];
-      $scope.updateTeamOptions = function() {
-        var team, teamOptions, _i, _len, _ref;
-
-        teamOptions = [
-          {
-            name: "None",
-            tid: null
-          }
-        ];
-        _ref = $scope.teams;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          team = _ref[_i];
-          teamOptions.push({
-            name: team.name,
-            tid: team.tid
-          });
-        }
-        $scope.teamOptions = teamOptions;
-        return true;
-      };
-      $scope.teams = TeamService.query({
-        id: ""
-      }, function(data, headers) {
-        console.log("TeamService get success");
-        console.log(data);
-        console.log(headers());
-        console.log($scope.teams);
-        $scope.errorMsg = '';
-        $scope.updateTeamOptions();
-        return true;
-      }, function(response) {
-        var _ref, _ref1;
-
-        console.log("TeamService get fail");
-        console.log(response);
-        console.log((_ref = response.data) != null ? _ref.error : void 0);
-        console.log(response.headers());
-        $scope.errorMsg = ((_ref1 = response.data) != null ? _ref1.error : void 0) || response.data;
-        return true;
-      });
-      $scope.players = PlayerService.query({
-        id: ""
-      }, function(data, headers) {
-        console.log("PlayerService get success");
-        console.log(data);
-        console.log(headers());
-        console.log($scope.players);
-        $scope.errorMsg = '';
-        return true;
-      }, function(response) {
-        var _ref, _ref1;
-
-        console.log("PlayerService get fail");
-        console.log(response);
-        console.log((_ref = response.data) != null ? _ref.error : void 0);
-        console.log(response.headers());
-        $scope.errorMsg = ((_ref1 = response.data) != null ? _ref1.error : void 0) || response.data;
-        return true;
-      });
       $scope.player = PlayerService.get({
         id: $scope.pid
       }, function(data, headers) {
@@ -579,25 +546,6 @@
         console.log(response);
         return console.log(response.headers());
       });
-      $scope.savePlayer = function(pid) {
-        $scope.errored = false;
-        $scope.alert = "";
-        if ($scope.playerForm.$invalid) {
-          $scope.playerForm.$dirty = true;
-          $scope.errored = true;
-          $scope.alert = "Some values are missing or invalid.";
-          return;
-        }
-        return $scope.player.$put({}, function(data, headers) {
-          console.log("PlayerService put success");
-          console.log(data);
-          return console.log(headers());
-        }, function(response) {
-          console.log("PlayerService put fail");
-          console.log(response);
-          return console.log(response.headers());
-        });
-      };
       return true;
     }
   ]);

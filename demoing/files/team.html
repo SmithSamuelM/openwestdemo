@@ -1,3 +1,12 @@
+<div class="row=fluid" ng-show="!!errorMsg">
+  <div class="span9">
+    <div class="alert alert-error" >
+      <strong>Error!</strong> {{errorMsg}}
+    </div>
+  </div>
+</div>
+
+
 <div class="row-fluid">
   <div class="span3">
   <h3>Team: {{team.name}} {{team.tid}}</h3>
@@ -42,98 +51,11 @@
   </div>
 </div>
 
-<div class="row-fluid">
-  <form name="teamForm" class="form-inline">
-    <legend>Edit Team</legend>
-    <div class="span12">
-      <div class="controls controls-row">
-        <label class="control-label">Id<br/>
-          <input type="text" name="tid" placeholder="Team Id"
-            class="input-mini" ng-model="team.tid" readonly>
-        </label>
-        <label class="control-label">Name<br/>
-          <input type="text" name="name" placeholder="Name" required 
-              class="input-small" ng-model="team.name">
-        </label>
-      </div>
-      <div class="controls controls-row">
-        <label class="control-label">Players<br/>
-        </label>
-      </div>
-      <div class="controls controls-row">
-          
-            <div ng-repeat="player in players ">
-              <ng-form class="form-inline" name="playerForm" au-form-name="playerForm{{$index}}"
-                au-outer-form="teamForm" class="form-horizontal" ng-cloak>
-                  <div class="controls controls-row">
-                    <label class="control-label">Id<br/>
-                      <input type="text" name="pid" placeholder="Player Id" class="input-mini" 
-                        ng-model="player.pid" ng-required="true" 
-                        ng-readonly="true" title="Player Id">
-                    </label>
-                    <label class="control-label">Name<br/>
-                      <input type="text" name="name" placeholder="Name" class="input-mini" 
-                        ng-model="player.name" ng-required="true" title="Player Name">
-                    </label>
-                    <label class="control-label">Health<br/>
-                      <input type="text" name="health" placeholder="Health" class="input-mini" 
-                        ng-model="player.health" ng-required="true" title="Player Health" >
-                    </label>
-                    <label class="control-label">Skill<br/>
-                      <input type="text" name="skill" placeholder="Skill" class="input-mini" 
-                        ng-model="player.skill" ng-required="true" title="Player Skill">
-                    </label>
-                    <label class="control-label">Team Id<br/>
-                      <input type="text" name="tid" placeholder="Team Id" class="input-mini" 
-                        ng-model="player.tid" ng-required="true"  ng-readonly="false" title="Team Id">
-                    </label>
-                    <div class="btn-group">
-                      <button class='btn btn-mini' href="" title="Delete Player" 
-                        ng-click="removePlayer($index)"><i class="icon-remove"></i>
-                      </button>
-                    </div>
-                  </div>
-              </ng-form>
-            </div>
-            
-        <button class='btn btn-mini' href="" title="Add Player" 
-            ng-click="addPlayer()"><i class="icon-plus"></i>
-        </button><br/>
-      </div>
-      <p/>
-      <div class="controls-row">
-        <div class="btn-group pull-left">
-          <button class="btn"  href="" ng-click="newOrder();editable=true;">New</button>
-          <button class="btn"  href="" ng-click="saveOrder()" 
-            ng-disabled="orderForm.$invalid || orderForm.$pristine">Save</button>
-          <button class="btn" type="button" ng-click="refreshOrder(order.pid)"
-            ng-disabled="!order.pid">Refresh</button>
-        </div>
-      </div> 
-      <div class="controls-row" >
-        <div ng-style="{color:'red'}" ng-cloak 
-          ng-show="orderForm.$dirty && orderForm.$invalid">
-          <span ng-show="!!orderForm.$error.required"> Incomplete:</span>
-          <span ng-show="orderForm.pid.$error.required"> Port Id.</span>
-          <span ng-show="orderForm.poid.$error.required"> Order Id.</span>
-          <div ng-repeat="number in numbers">
-            <span ng-show="numberRequired($index)">Number{{$index}}.</span>
-          </div>
-          <span ng-show="!!orderForm.$error.pattern"> Invalid: </span>
-          <span ng-show="orderForm.poid.$error.pattern"> Order Id.</span>
-          <div ng-repeat="number in numbers">
-            <span ng-show="numberInvalid($index)">Number{{$index}}.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-  </form>
-</div>
 <p/>
 
-    
-<h4>Team</h4>
-<p>{{team}}</p>
-<h4>Players</h4>
-<p>{{players}}</p>
+<div ng-show="false">
+  <h4>Team</h4>
+  <p>{{team}}</p>
+  <h4>Players</h4>
+  <p>{{players}}</p>
+</div>
