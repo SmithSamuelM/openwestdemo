@@ -160,7 +160,61 @@
       if (!$scope.pid) {
         $scope.pid = 1;
       }
-      $scope.kindOptions = ['good', 'bad'];
+      $scope.teamOptions = [];
+      $scope.updateTeamOptions = function() {
+        var team, teamOptions, _i, _len, _ref;
+
+        teamOptions = [];
+        _ref = $scope.teams;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          team = _ref[_i];
+          teamOptions.push({
+            name: team.name,
+            tid: team.tid
+          });
+        }
+        $scope.teamOptions = teamOptions;
+        return true;
+      };
+      $scope.teams = TeamService.query({
+        id: ""
+      }, function(data, headers) {
+        console.log("TeamService get success");
+        console.log(data);
+        console.log(headers());
+        console.log($scope.teams);
+        $scope.errorMsg = '';
+        $scope.updateTeamOptions();
+        return true;
+      }, function(response) {
+        var _ref, _ref1;
+
+        console.log("TeamService get fail");
+        console.log(response);
+        console.log((_ref = response.data) != null ? _ref.error : void 0);
+        console.log(response.headers());
+        $scope.errorMsg = ((_ref1 = response.data) != null ? _ref1.error : void 0) || response.data;
+        return true;
+      });
+      $scope.players = PlayerService.query({
+        id: ""
+      }, function(data, headers) {
+        console.log("PlayerService get success");
+        console.log(data);
+        console.log(headers());
+        console.log($scope.players);
+        $scope.errorMsg = '';
+        return true;
+      }, function(response) {
+        var _ref, _ref1;
+
+        console.log("PlayerService get fail");
+        console.log(response);
+        console.log((_ref = response.data) != null ? _ref.error : void 0);
+        console.log(response.headers());
+        $scope.errorMsg = ((_ref1 = response.data) != null ? _ref1.error : void 0) || response.data;
+        return true;
+      });
       $scope.player = PlayerService.get({
         id: $scope.pid
       }, function(data, headers) {
@@ -192,16 +246,6 @@
           return console.log(response.headers());
         });
       };
-      return true;
-    }
-  ]);
-
-  myApp.controller('DirectiveCtlr', [
-    '$scope', '$location', '$route', 'TeamService', 'PlayerService', function($scope, $location, $route, TeamService, PlayerService) {
-      $scope.location = $location;
-      $scope.route = $route;
-      $scope.winLoc = window.location;
-      console.log("DirectiveCtlr");
       return true;
     }
   ]);

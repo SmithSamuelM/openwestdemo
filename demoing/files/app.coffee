@@ -153,8 +153,53 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
         $scope.pid = $routeParams.pid
         if not $scope.pid
             $scope.pid = 1
+        
+        $scope.teamOptions = []
+        $scope.updateTeamOptions = () ->
+            teamOptions = []
+            for team in $scope.teams
+                teamOptions.push({name: team.name, tid: team.tid})
+            $scope.teamOptions = teamOptions
+            return true
             
-        $scope.kindOptions = ['good','bad']
+        $scope.teams = TeamService.query({id: ""},
+            (data, headers) ->
+                console.log("TeamService get success")
+                console.log(data)
+                console.log(headers())
+                console.log($scope.teams)
+                $scope.errorMsg = ''
+                $scope.updateTeamOptions()
+                return true
+            ,
+            (response) ->
+                console.log("TeamService get fail")
+                console.log(response)
+                console.log(response.data?.error)
+                console.log(response.headers())
+                $scope.errorMsg=response.data?.error or response.data
+                return true
+        )
+        
+        $scope.players = PlayerService.query({id: ""},
+            (data, headers) ->
+                console.log("PlayerService get success")
+                console.log(data)
+                console.log(headers())
+                console.log($scope.players)
+                $scope.errorMsg = ''
+                return true
+            ,
+            (response) ->
+                console.log("PlayerService get fail")
+                console.log(response)
+                console.log(response.data?.error)
+                console.log(response.headers())
+                $scope.errorMsg=response.data?.error or response.data
+                return true
+        )
+        
+        
 
         $scope.player = PlayerService.get({id: $scope.pid},
             (data, headers) ->
@@ -193,19 +238,6 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
         return true
 ])
 
-
-myApp.controller('DirectiveCtlr', ['$scope', '$location', '$route', 
-    'TeamService', 'PlayerService',
-    ($scope, $location, $route, TeamService, PlayerService) ->
-        $scope.location = $location
-        $scope.route = $route
-        $scope.winLoc = window.location
-        
-        console.log("DirectiveCtlr")
-
-        
-        return true
-])
 
 # To compile do
 # $ coffee -c jct.coffee 

@@ -113,8 +113,9 @@ def playerRead(pid):
     
     player = teaming.players.get(pid, None)
     if not player:
-        bottle.abort(404, "Player '%s' not found." % (pid,))    
-    return player._dumpable(deep=true)
+        bottle.abort(404, "Player '%s' not found." % (pid,))
+    
+    return player._dumpable(deep=True)
 
 
 @app.get('/players/<pid>/update') #testing only
