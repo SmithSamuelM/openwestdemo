@@ -32,6 +32,22 @@
     }
   ]);
 
+  myApp.filter('express', function() {
+    var suppress;
+
+    suppress = function(input, flag) {
+      var output;
+
+      if (!!flag) {
+        output = input;
+      } else {
+        output = null;
+      }
+      return output;
+    };
+    return suppress;
+  });
+
   myApp.controller('NavbarCtlr', [
     '$scope', '$routeParams', '$location', '$route', function($scope, $routeParams, $location, $route) {
       var _ref;
@@ -160,11 +176,37 @@
       if (!$scope.pid) {
         $scope.pid = 1;
       }
+      $scope.playerInvalid = function(index) {
+        var _ref;
+
+        if ($scope.playersForm["playerForm" + index] == null) {
+          console.log("Inner playerForm" + index + " undefined");
+        }
+        if (!((_ref = $scope.players[index]) != null ? _ref.name : void 0)) {
+          return true;
+        } else {
+          return false;
+        }
+      };
+      $scope.numberInvalid = function(index) {
+        var _ref, _ref1, _ref2, _ref3;
+
+        if (((_ref = $scope.numbers[index]) != null ? _ref.use : void 0) && (($scope != null ? (_ref1 = $scope.orderForm["numberForm" + index]) != null ? _ref1.npa.$error.pattern : void 0 : void 0) || ($scope != null ? (_ref2 = $scope.orderForm["numberForm" + index]) != null ? _ref2.nxx.$error.pattern : void 0 : void 0) || ($scope != null ? (_ref3 = $scope.orderForm["numberForm" + index]) != null ? _ref3.xxxx.$error.pattern : void 0 : void 0))) {
+          return true;
+        } else {
+          return false;
+        }
+      };
       $scope.teamOptions = [];
       $scope.updateTeamOptions = function() {
         var team, teamOptions, _i, _len, _ref;
 
-        teamOptions = [];
+        teamOptions = [
+          {
+            name: "None",
+            tid: null
+          }
+        ];
         _ref = $scope.teams;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           team = _ref[_i];

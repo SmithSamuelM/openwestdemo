@@ -36,6 +36,18 @@ myApp.config ["$locationProvider", "$routeProvider",
         return true
 ]
 
+myApp.filter('express', () ->
+        suppress = (input, flag) ->
+            if !!flag
+                output = input
+            else
+                output = null
+            return output
+        
+        return suppress
+)
+
+
 myApp.controller('NavbarCtlr', ['$scope', '$routeParams', '$location', '$route',
     ($scope, $routeParams, $location, $route) ->
         $scope.location = $location
@@ -154,9 +166,26 @@ myApp.controller('PlayerCtlr', ['$scope', '$routeParams', '$location', '$route',
         if not $scope.pid
             $scope.pid = 1
         
+        $scope.playerInvalid = (index) ->
+            console.log("Inner playerForm#{index} undefined") if not $scope.playersForm["playerForm" + index]?
+            if  !$scope.players[index]?.name 
+                return true
+            else 
+                return false
+        
+        $scope.numberInvalid = (index) ->
+            #console.log("Inner numberForm#{index} undefined") if not $scope.orderForm["numberForm" + index]?
+            if  $scope.numbers[index]?.use and
+                    ($scope?.orderForm["numberForm" + index]?.npa.$error.pattern or
+                    $scope?.orderForm["numberForm" + index]?.nxx.$error.pattern or
+                    $scope?.orderForm["numberForm" + index]?.xxxx.$error.pattern)
+                return true
+            else 
+                return false
+        
         $scope.teamOptions = []
         $scope.updateTeamOptions = () ->
-            teamOptions = []
+            teamOptions = [{name: "None", tid: null}]
             for team in $scope.teams
                 teamOptions.push({name: team.name, tid: team.tid})
             $scope.teamOptions = teamOptions

@@ -12,9 +12,9 @@
     <div class="btn-group pull-right">
       <button class="btn"  href="" ng-click="newPlayer(pid)">New</button>
       <button class="btn"  href="" ng-click="savePlayer(pid)" 
-        ng-disabled="playerForm.$invalid || playerForm.$pristine">Save</button>
+        ng-disabled="playerOldForm.$invalid || playerOldForm.$pristine">Save</button>
     </div>
-    <form name="playerForm" class="form-inline">
+    <form name="playerOldForm" class="form-inline">
       <legend>Player</legend>
       <div class="controls controls-row">
         <label>Id<br/>
@@ -40,11 +40,11 @@
       </div>
       <div class="controls-row" >
         <div ng-style="{color:'red'}" ng-cloak 
-          ng-show="playerForm.$dirty && playerForm.$invalid">
-          <span ng-show="!!playerForm.$error.required"> Missing:</span>
-          <span ng-show="playerForm.name.$error.required"> Name.</span>
-          <span ng-show="playerForm.health.$error.required"> Health.</span>
-          <span ng-show="playerForm.skill.$error.required"> Skill.</span>
+          ng-show="playerOldForm.$dirty && playerOldForm.$invalid">
+          <span ng-show="!!playerOldForm.$error.required"> Missing:</span>
+          <span ng-show="playerOldForm.name.$error.required"> Name.</span>
+          <span ng-show="playerOldForm.health.$error.required"> Health.</span>
+          <span ng-show="playerOldForm.skill.$error.required"> Skill.</span>
           <!--<span ng-show="!!playerForm.$error.pattern"> Invalid: </span>-->
           <!--<span ng-show="playerForm.pon.$error.pattern"> Strength.</span>-->
         </div>
@@ -67,29 +67,32 @@
           <ng-form class="form-inline" name="playerForm" au-form-name="playerForm{{$index}}"
             au-outer-form="playersForm" class="form-horizontal" ng-cloak>
               <div class="controls controls-row">
-                <label class="control-label">Id<br/>
+                <label class="control-label">{{"Id" | express:$first}}<br ng-show="$first"/>
                   <input type="text" name="pid" placeholder="Player Id" class="input-mini" 
-                    ng-model="player.pid" ng-required="true" 
+                    ng-model="player.pid" ng-required="false" 
                     ng-readonly="true" title="Player Id">
                 </label>
-                <label class="control-label">Name<br/>
+                <label class="control-label">{{"Name" | express:$first}}<br ng-show="$first"/>
                   <input type="text" name="name" placeholder="Name" class="input-mini" 
-                    ng-model="player.name" ng-required="true" title="Player Name">
+                    ng-model="player.name" ng-required="false" title="Player Name">
                 </label>
-                <label class="control-label">Health<br/>
-                  <input type="text" name="health" placeholder="Health" class="input-mini" 
-                    ng-model="player.health" ng-required="true" title="Player Health" >
+                <label class="control-label">{{"Health" | express:$first}}<br ng-show="$first"/>
+                  <input type="number" min="1" max="9" name="health" placeholder="Health" 
+                    class="input-mini" ng-model="player.health" 
+                    ng-required="false" title="Player Health" >
                 </label>
-                <label class="control-label">Skill<br/>
-                  <input type="text" name="skill" placeholder="Skill" class="input-mini" 
-                    ng-model="player.skill" ng-required="true" title="Player Skill">
+                <label class="control-label">{{"Skill" | express:$first}}<br ng-show="$first"/>
+                  <input type="number" min="1" max="9" name="skill" placeholder="Skill" 
+                    class="input-mini" ng-model="player.skill" 
+                    ng-required="false" title="Player Skill">
                 </label>
-                <label class="control-label">Team Id<br/>
-                  <input type="text" name="tid" placeholder="Team Id" class="input-mini" 
-                    ng-model="player.tid" ng-required="true"  ng-readonly="true" title="Team Id">
+                <label class="control-label">{{"Team Id" | express:$first}}<br ng-show="$first"/>
+                  <input type="text" name="tid" placeholder="Team Id" 
+                    class="input-mini" ng-model="player.tid"  
+                    ng-required="false" ng-readonly="true" title="Team Id">
                 </label>
-                <label>Team<br/>
-                  <select class="input-small" name="team" required 
+                <label>{{"Team" | express:$first}}<br ng-show="$first"/>
+                  <select class="input-small" name="team"
                     ng-model="player.tid" title="Change Team"
                     ng-options="option.tid as option.name for option in teamOptions">
                   </select>
@@ -99,6 +102,7 @@
                     ng-click="removePlayer($index)"><i class="icon-remove"></i>
                   </button>
                 </div>
+                <span ng-style="{color:'red'}" ng-cloak ng-show="playerInvalid($index)"> Invalid</span>
               </div>
           </ng-form>
         </div>
@@ -116,22 +120,6 @@
             ng-disabled="!order.pid">Refresh</button>
         </div>
       </div> 
-      <div class="controls-row" >
-        <div ng-style="{color:'red'}" ng-cloak 
-          ng-show="orderForm.$dirty && orderForm.$invalid">
-          <span ng-show="!!orderForm.$error.required"> Incomplete:</span>
-          <span ng-show="orderForm.pid.$error.required"> Port Id.</span>
-          <span ng-show="orderForm.poid.$error.required"> Order Id.</span>
-          <div ng-repeat="number in numbers">
-            <span ng-show="numberRequired($index)">Number{{$index}}.</span>
-          </div>
-          <span ng-show="!!orderForm.$error.pattern"> Invalid: </span>
-          <span ng-show="orderForm.poid.$error.pattern"> Order Id.</span>
-          <div ng-repeat="number in numbers">
-            <span ng-show="numberInvalid($index)">Number{{$index}}.</span>
-          </div>
-        </div>
-      </div>
     </div>
     
   </form>
