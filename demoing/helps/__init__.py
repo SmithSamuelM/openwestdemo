@@ -27,16 +27,17 @@ class SpecialFormatter(logging.Formatter):
         return s
 
 
+LOGGER_FORMATTER = SpecialFormatter(LOGGER_FORMAT, datefmt=LOGGER_DATE_FORMAT) 
+LOGGER_HANDLER = logging.StreamHandler()
+LOGGER_HANDLER.setFormatter(LOGGER_FORMATTER)
+
 def getLogger(name=LOGGER_NAME, level=LOGGER_LEVEL):
     """ Utility fuction for creating logger with predefined configuration
         Call getLogger() with the same name to get the same logger object
     
     """
-    formatter = SpecialFormatter(LOGGER_FORMAT, datefmt=LOGGER_DATE_FORMAT) 
-    handler= logging.StreamHandler()
-    handler.setFormatter(formatter)      
     logger = logging.getLogger(name)
-    logger.addHandler(handler)
+    logger.addHandler(LOGGER_HANDLER)
     logger.propagate = False 
     logger.setLevel(level)
     return logger    

@@ -61,17 +61,13 @@ def teamCreate():
         bottle.abort(400, "Team '%s' already exists." % name)
         
     team = teaming.newTeam(name = name)
+    teaming.saveCouchdb()
     
     bottle.response.set_header('content-type', 'application/json')
     return team._dumps()
 
 @app.route('/team/<tid>') 
 def teamRead(tid):
-    try:
-        tid = int(tid)
-    except ValueError:
-        bottle.abort(400, "Invalid team id %s" % tid)
-        
     team = teaming.teams.get(tid, None)
     if not team:
         bottle.abort(404, "Team '%s' not found." % tid)
@@ -82,12 +78,7 @@ def teamRead(tid):
 @app.get('/team/<tid>/update') #testing only
 @app.put('/team/<tid>') 
 def teamUpdate(tid):
-    """Update team"""
-    try:
-        tid = int(tid)
-    except ValueError:
-        bottle.abort(400, "Invalid team id %s" % tid)      
-    
+    """Update team"""   
     team = teaming.teams.get(tid)
     if not team:
         bottle.abort(404, "Team '%s' not found." % (tid,))     
@@ -108,6 +99,7 @@ def teamUpdate(tid):
         if otherTeam and otherTeam.tid != team.tid:
             bottle.abort(400, "Team name '%s' already used." % name)
         team.name = name
+    teaming.saveCouchdb()
     
     bottle.response.set_header('content-type', 'application/json')
     return team._dumps()
@@ -116,11 +108,6 @@ def teamUpdate(tid):
 @app.delete('/team/<tid>') 
 def TeamDelete(tid):
     """Delete team"""
-    try:
-        tid = int(tid)
-    except ValueError:
-        bottle.abort(400, "Invalid team id %s" % tid)
-        
     team = teaming.teams.get(tid)
     if not team:
         bottle.abort(404, "Team '%s' not found." % (tid,))
@@ -129,6 +116,7 @@ def TeamDelete(tid):
         team.removePlayer(player)
     
     del teaming.teams[team.tid]
+    teaming.saveCouchdb()
     
     return {}
 
@@ -138,17 +126,6 @@ def teamCompete():
     """ Perform compete """
     tid1 = bottle.request.query.get("tid1")
     tid2 = bottle.request.query.get("tid2")
-    try:
-        tid1 = int(tid1)
-    except ValueError:
-        bottle.abort(400, "Invalid team id %s" % tid1)
-    
-    try:
-        tid2 = int(tid2)
-    except ValueError:
-        bottle.abort(400, "Invalid team id %s" % tid2)
-    
-    
     team1 =  teaming.teams.get(tid1)
     team2 =  teaming.teams.get(tid2)
     winner = None
@@ -163,11 +140,6 @@ def teamAction(tid, action):
     """ Perform action on team
         
     """
-    try:
-        tid = int(tid)
-    except ValueError as ex:
-        bottle.abort(400, "Invalid team id %s" % tid)
-        
     team = teaming.teams.get(tid, None)
     if not team:
         bottle.abort(404, "Team '%s' not found." % tid)
@@ -183,13 +155,6 @@ def scrubTeamData(data):
     name = data.get('name')
     if not name:
         bottle.abort(400, "Name required.")
-    
-    for key in ['tid']:
-        if data[key] is not None:
-            try:
-                data[key] = int(data[key])
-            except ValueError, TypeError:
-                bottle.abort(400, "Key %s not an integer." % key)
     
     return data
 
@@ -222,16 +187,12 @@ def playerCreate():
     
     player = teaming.newPlayer(name = data.get('name'), team=team,
                        health=data.get('health'),  skill=data.get('skill'))
+    teaming.saveCouchdb()
     
     return player._dumpable()
 
 @app.get('/player/<pid>') 
 def playerRead(pid):
-    try:
-        pid = int(pid)
-    except ValueError:
-        bottle.abort(400, "Invalid player id %s" % pid)    
-    
     player = teaming.players.get(pid, None)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))
@@ -243,11 +204,6 @@ def playerRead(pid):
 @app.put('/player/<pid>') 
 def playerUpdate(pid):
     """Update player"""
-    try:
-        pid = int(pid)
-    except ValueError:
-        bottle.abort(400, "Invalid player id %s" % pid)      
-    
     player = teaming.players.get(pid)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))     
@@ -269,18 +225,14 @@ def playerUpdate(pid):
     for key in ['name', 'health', 'skill']:
         if key in data: #only change exiting fields
             setattr(player, key, data[key])
+    teaming.saveCouchdb()
     
     return player._dumpable()
 
 @app.get('/player/<pid>/remove') #testing only
 @app.delete('/player/<pid>') 
 def PlayerDelete(pid):
-    """Delete player"""
-    try:
-        pid = int(pid)
-    except ValueError:
-        bottle.abort(400, "Invalid player id %s" % pid)
-        
+    """Delete player""" 
     player = teaming.players.get(pid)
     if not player:
         bottle.abort(404, "Player '%s' not found." % (pid,))
@@ -290,6 +242,7 @@ def PlayerDelete(pid):
         team.removePlayer(player)
     
     del teaming.players[player.pid]
+    teaming.saveCouchdb()
     
     return {}
 
@@ -303,7 +256,7 @@ def scrubPlayerData(data):
     if not name:
         bottle.abort(400, "Name required.")
     
-    for key in ['pid', 'skill', 'health', 'tid']:
+    for key in ['skill', 'health']:
         if data[key] is not None:
             try:
                 data[key] = int(data[key])

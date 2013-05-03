@@ -5,13 +5,15 @@ import sys
 import random
 from os import path
 from  collections import OrderedDict as ODict
-
+import simplejson as json
+import couchdb
 import brining
 
 from ..helps import getLogger
 
 logger = getLogger()
 
+DATABASE_NAME = 'openwestdemo'
 MAX_SKILL = 9
 MAX_HEALTH = 9
 
@@ -107,7 +109,11 @@ class Player(brining.Brine):
     def __init__(self, name="", health=5, skill=2):
         """ Initialize"""
         Player._Pid += 1
-        self.pid = Player._Pid
+        self.pid = "p%03d" % Player._Pid
+        while self.pid in players.keys():
+            Player._Pid += 1
+            self.pid = "p%03d" % Player._Pid
+            
         self.name = name.strip()
         self.health = int(health)
         self.skill = int(skill)
@@ -130,7 +136,11 @@ class Team(brining.Brine):
     def __init__(self, name=None):
         """ Init team with unique tid"""
         Team._Tid += 1
-        self.tid = Team._Tid
+        self.tid = "t%03d" % Team._Tid
+        while self.tid in teams.keys():
+            Team._Tid += 1
+            self.tid = "t%03d" % Team._Tid
+            
         if not name:
             name = "Team%s" % self.tid
             while fetchTeam(name):
@@ -165,10 +175,52 @@ class Team(brining.Brine):
             score += player.skill +  player.health +  random.randint(0, 5)
         return score
 
-team = newTeam(name="Red")
-newPlayer(name='John', team=team)
-newPlayer(name='Betty', team=team)
 
-team = newTeam(name="Blue")
-newPlayer(name='Sally', team=team)
-newPlayer(name='Peter', team=team)
+def saveCouchdb():
+    doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
+                teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
+    db.save(doc)
+    db.commit()
+
+#team = newTeam(name="Red")
+#newPlayer(name='John', team=team)
+#newPlayer(name='Betty', team=team)
+
+#team = newTeam(name="Blue")
+#newPlayer(name='Sally', team=team)
+#newPlayer(name='Peter', team=team)
+
+
+couch = couchdb.Server()
+db = couch[DATABASE_NAME]
+logger.info("Using couchdb %s" % db)
+ids = [id_ for  id_ in db]
+if not ids or not (db[ids[-1]].get('players') and db[ids[-1]].get('teams')):
+    team = newTeam(name="Red")
+    newPlayer(name='John', team=team)
+    newPlayer(name='Betty', team=team)
+    
+    team = newTeam(name="Blue")
+    newPlayer(name='Sally', team=team)
+    newPlayer(name='Peter', team=team)
+    
+    doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
+                teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
+    db.save(doc)
+
+ids = [id_ for  id_ in db]
+latest = ids[-1]
+doc = db[latest]
+logger.info(doc)
+players = brining.debrines(json.dumps(doc['players'],
+                                      default=brining.default, indent=2),
+                           classes=[Player])
+teams = brining.debrines(json.dumps(doc['teams'],
+                                    default=brining.default, indent=2),
+                         classes=[Player, Team])
+for tid, team in teams.items():
+    print tid, team.tid, team.name
+    for pid, player in team.players.items():
+        print pid, player.pid, player.name, player.tid
+
+
