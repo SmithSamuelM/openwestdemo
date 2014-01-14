@@ -61,7 +61,7 @@ def teamCreate():
         bottle.abort(400, "Team '%s' already exists." % name)
         
     team = teaming.newTeam(name = name)
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     bottle.response.set_header('content-type', 'application/json')
     return team._dumps()
@@ -99,7 +99,7 @@ def teamUpdate(tid):
         if otherTeam and otherTeam.tid != team.tid:
             bottle.abort(400, "Team name '%s' already used." % name)
         team.name = name
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     bottle.response.set_header('content-type', 'application/json')
     return team._dumps()
@@ -116,7 +116,7 @@ def TeamDelete(tid):
         team.removePlayer(player)
     
     del teaming.teams[team.tid]
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     return {}
 
@@ -187,7 +187,7 @@ def playerCreate():
     
     player = teaming.newPlayer(name = data.get('name'), team=team,
                        health=data.get('health'),  skill=data.get('skill'))
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     return player._dumpable()
 
@@ -225,7 +225,7 @@ def playerUpdate(pid):
     for key in ['name', 'health', 'skill']:
         if key in data: #only change exiting fields
             setattr(player, key, data[key])
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     return player._dumpable()
 
@@ -242,7 +242,7 @@ def PlayerDelete(pid):
         team.removePlayer(player)
     
     del teaming.players[player.pid]
-    teaming.saveCouchdb()
+    #teaming.saveCouchdb()
     
     return {}
 

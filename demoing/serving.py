@@ -79,7 +79,7 @@ if __name__ == "__main__":
     logger.info("Logger %s at level %s." % (logger.name, args.level))
     
     
-    gevent.signal(signal.SIGQUIT, gevent.shutdown)    
+    #gevent.signal(signal.SIGQUIT, gevent.shutdown)    
     
     from demoing.ends import app
     

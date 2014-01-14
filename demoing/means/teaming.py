@@ -6,7 +6,7 @@ import random
 from os import path
 from  collections import OrderedDict as ODict
 import simplejson as json
-import couchdb
+#import couchdb
 import brining
 
 from ..helps import getLogger
@@ -176,48 +176,52 @@ class Team(brining.Brine):
         return score
 
 
-def saveCouchdb():
-    doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
-                teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
-    db.save(doc)
-    db.commit()
-
-#team = newTeam(name="Red")
-#newPlayer(name='John', team=team)
-#newPlayer(name='Betty', team=team)
-
-#team = newTeam(name="Blue")
-#newPlayer(name='Sally', team=team)
-#newPlayer(name='Peter', team=team)
+#def saveCouchdb():
+    #doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
+                #teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
+    #db.save(doc)
+    #db.commit()
 
 
-couch = couchdb.Server()
-db = couch[DATABASE_NAME]
-logger.info("Using couchdb %s" % db)
-ids = [id_ for  id_ in db]
-if not ids or not (db[ids[-1]].get('players') and db[ids[-1]].get('teams')):
-    team = newTeam(name="Red")
-    newPlayer(name='John', team=team)
-    newPlayer(name='Betty', team=team)
+team = newTeam(name="Red")
+newPlayer(name='John', team=team)
+newPlayer(name='Betty', team=team)
+
+team = newTeam(name="Blue")
+newPlayer(name='Sally', team=team)
+newPlayer(name='Peter', team=team)
+
+
+#couch = couchdb.Server()
+#db = couch[DATABASE_NAME]
+#logger.info("Using couchdb %s" % db)
+#ids = [id_ for  id_ in db]
+#if not ids or not (db[ids[-1]].get('players') and db[ids[-1]].get('teams')):
+    #team = newTeam(name="Red")
+    #newPlayer(name='John', team=team)
+    #newPlayer(name='Betty', team=team)
     
-    team = newTeam(name="Blue")
-    newPlayer(name='Sally', team=team)
-    newPlayer(name='Peter', team=team)
+    #team = newTeam(name="Blue")
+    #newPlayer(name='Sally', team=team)
+    #newPlayer(name='Peter', team=team)
     
-    doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
-                teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
-    db.save(doc)
+    #doc = dict(players= json.loads(json.dumps(players, default=brining.default, indent=2)),
+                #teams=json.loads(json.dumps(teams, default=brining.default, indent=2)))
+    #db.save(doc)
 
-ids = [id_ for  id_ in db]
-latest = ids[-1]
-doc = db[latest]
-logger.info(doc)
-players = brining.debrines(json.dumps(doc['players'],
-                                      default=brining.default, indent=2),
-                           classes=[Player])
-teams = brining.debrines(json.dumps(doc['teams'],
-                                    default=brining.default, indent=2),
-                         classes=[Player, Team])
+#ids = [id_ for  id_ in db]
+#latest = ids[-1]
+#doc = db[latest]
+#logger.info(doc)
+
+#players = brining.debrines(json.dumps(doc['players'],
+                                      #default=brining.default, indent=2),
+                           #classes=[Player])
+#teams = brining.debrines(json.dumps(doc['teams'],
+                                    #default=brining.default, indent=2),
+                         #classes=[Player, Team])
+
+
 for tid, team in teams.items():
     print tid, team.tid, team.name
     for pid, player in team.players.items():
