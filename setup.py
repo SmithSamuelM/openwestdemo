@@ -4,7 +4,7 @@
 
     http://python-distribute.org/distribute_setup.py
 
-    python setup.py register -r jive sdist upload -r jive
+    python setup.py register  sdist upload 
 
     
 """
